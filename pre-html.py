@@ -49,4 +49,3 @@ class wordscapes:
                         match2=False
                 if match1==True and match2==True:
                     wordscapes.total_matches.append(line[:-1])
-    def show_matches(self):
