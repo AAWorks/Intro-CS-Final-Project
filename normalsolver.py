@@ -1,39 +1,48 @@
 #!/usr/bin/python3
 
 import cgi
+from urllib.request import urlopen
 
 class wordscapes:
     total_matches=[]
     def wordtodict(self, word):
         letterdict={}
         for i in range(len(word)):
-            if word[i] != '-':
+            if type(word[i])==int:
+                    letterdict[i]=chr(word[i])
+            else:
                 letterdict[i]=word[i]
         return letterdict
     def solve_normal(self, available_letters):
         posletters=available_letters.replace(',','',available_letters.count(','))
         posletters=posletters.replace(' ','',available_letters.count(' '))
         posletters=posletters.lower()
-        with open('http://moe.stuy.edu/~aalonso20/dictionary.txt', 'r') as dict_file:
+        with urlopen(url='http://www.mieliestronk.com/corncob_lowercase.txt') as dict_file:
             for line in dict_file.readlines():
                 tempdict=wordscapes().wordtodict(line)
                 match1, match2=(True, True)
                 templetters=list(tempdict.values())
-                templetters=templetters[:-1]
-                lengths=list(range(4, len(available_letters)+1))
-                if not len(line) in lengths:
+                templetters=templetters[:-2]
+                lengths=list(range(3, len(available_letters)+1))
+                if not len(templetters) in lengths:
                     match1=False
                 for templetter in templetters:
                     if templetters.count(templetter) > posletters.count(templetter):
                         match2=False
                 if match1==True and match2==True:
-                    wordscapes.total_matches.append(line[:-1])
+                    match=''.join(templetters)
+                    match=match[0].upper()+match[1:]
+                    wordscapes().total_matches.append(match)
+        matches=' '.join(map(str, wordscapes().total_matches))
+        matches=matches.replace(' ', ', ')
+        if bool(wordscapes().total_matches):
+            return matches
+        else:
+            return 'None - Check Submission Values'
 
 class GUI:
-    formData=cgi.FieldStorage()
     def htmlTop(self):
         print('''
-Content-type: text/html\n
 <!DOCTYPE html>
   <html lang="en-US">
     <head>
@@ -91,22 +100,26 @@ a:active{
     def htmlTail(self):
         print('''
       <div id="footer">
-        <p>Alejandro Alonso - <a href='mailto:aalonso20@stuy.edu'>aalonso20@stuy.edu</a> - <a href='https://www.facebook.com/profile.php?id=100026727005426' target='blank_'>Facebook</a> - <a href='https://www.instagram.com/axalonso_/?hl=en' target='blank_'>Instagram</a> - New York City, NY - Jun 2020</p>
+        <p>Alejandro Alonso - <a href='mailto:aalonso20@stuy.edu'>aalonso20@stuy.edu</a> - <a href='https://www.facebook.com/profile.php?id=100026727005426' target='blank_'>Facebook</a> - <a href='https://www.instagram.com/axalonso_/?hl=en' target='blank_'>Instagram</a> - Copyrights &copy; 2020 All Rights Reserved - Last Update: Jun 2020</p>
       </div>  
     </body>
   </html>
               ''')
     def getletters(self):
-        available_letters = GUI().formData.getvalue('available_letters')
+        formData=cgi.FieldStorage()
+        available_letters = formData.getvalue('available_letters')
         return available_letters
     def getword(self):
-        myword = GUI().formData.getvalue('partial_word')
+        formData=cgi.FieldStorage()
+        myword = formData.getvalue('partial_word')
         return myword
     def maincode(self):
+        print('Content-type:text/html\n')
         GUI().htmlTop()
         print('''
+      <h1 class='filler'>dsf</h1>
       <h1 class="heading">Possible words are: {}</h1>
-              '''.format(wordscapes().solve_normal(GUI().getword(), GUI().getletters())))
+              '''.format(wordscapes().solve_normal(GUI().getletters())))
         GUI().htmlTail()
 
 if __name__=='__main__':
